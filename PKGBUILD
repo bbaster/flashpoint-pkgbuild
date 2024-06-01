@@ -42,7 +42,7 @@ package()
 	
     echo "Linking launcher..."
     mkdir -vp "${pkgdir}/usr/bin"
-    ln -sv "/opt/Flashpoint/start-flashpoint.sh" "${pkgdir}/usr/bin/flashpoint-infinity"
+    ln -sv "/opt/Flashpoint/start-flashpoint.sh" "${pkgdir}/usr/bin/flashpoint-launcher"
 
     echo "Installing licenses, desktop file and icon..."
 	#mkdir -vp "${pkgdir}/usr/share/"{licenses,applications,pixmaps}/
@@ -53,6 +53,12 @@ package()
     cp -rp "${pkgdir}/opt/Flashpoint/Launcher/licenses/" "${pkgdir}/usr/share/licenses/Flashpoint"
     install -Dm644 "${srcdir}/../flashpoint.desktop" "${pkgdir}/usr/share/applications/flashpoint.desktop"
     install -Dm644 "${srcdir}/../icon.png" "${pkgdir}/usr/share/pixmaps/flashpoint.png"
+    
+    echo "Adding check to launch script..."    
+    sed -i -E '7s/(.*)/\1\n\
+if [[ "$(stat -c %U \/opt\/Flashpoint)" != "$USER" ]]\; then\
+\techo -e "WARNING: Flashpoint directory is not owned by current user! Expect issues. \
+Run \"sudo USER=$USER chown -R $USER \/opt\/Flashpoint\/\" to correct this."\nfi\n/g' "${pkgdir}/opt/Flashpoint/start-flashpoint.sh"
     
     #echo "Making everything writable by all ..."
     #chmod -R 777 "${pkgdir}/opt/Flashpoint"
